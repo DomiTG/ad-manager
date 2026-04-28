@@ -7,16 +7,20 @@ interface RateLimitEntry {
 }
 
 const store = new Map<string, RateLimitEntry>();
+let cleanupInterval: ReturnType<typeof setInterval> | null = null;
 
-// Clean up expired entries periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of store.entries()) {
-    if (now > entry.resetAt) {
-      store.delete(key);
+// Start cleanup interval lazily on first use to avoid issues in serverless/HMR environments
+function ensureCleanup(): void {
+  if (cleanupInterval !== null) return;
+  cleanupInterval = setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of store.entries()) {
+      if (now > entry.resetAt) {
+        store.delete(key);
+      }
     }
-  }
-}, 60_000);
+  }, 60_000);
+}
 
 /**
  * Check rate limit for a given key.
@@ -27,6 +31,7 @@ export function checkRateLimit(
   maxRequests: number = parseInt(process.env.AD_RATE_LIMIT_REQUESTS || "10"),
   windowMs: number = parseInt(process.env.AD_RATE_LIMIT_WINDOW_MS || "60000")
 ): { allowed: boolean; retryAfter?: number } {
+  ensureCleanup();
   const now = Date.now();
   const entry = store.get(key);
 

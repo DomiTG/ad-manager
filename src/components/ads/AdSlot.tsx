@@ -51,7 +51,10 @@ function getSessionId(): string {
   if (typeof window === "undefined") return "";
   let sid = sessionStorage.getItem("ad_session_id");
   if (!sid) {
-    sid = `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const uuid = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Date.now().toString(36)}`;
+    sid = `s_${uuid}`;
     sessionStorage.setItem("ad_session_id", sid);
   }
   return sid;
@@ -401,11 +404,8 @@ export default function AdSlot({
   // Ads disabled
   if (!adsEnabled) return null;
 
-  // Don't show ads to internal users
-  if (userId && process.env.INTERNAL_USER_IDS) {
-    const internalIds = process.env.INTERNAL_USER_IDS.split(",").map((id) => id.trim());
-    if (internalIds.includes(userId)) return null;
-  }
+  // Don't show ads to internal users (server-side enforcement via API routes handles this too)
+  // Client-side check is skipped since INTERNAL_USER_IDS is a server-only env var
 
   // Determine primary ad size for container dimensions
   const primarySize = (sizes || config?.sizes)?.[0] || [300, 250];

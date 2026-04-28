@@ -77,16 +77,19 @@ export function isViewable(visiblePercentage: number): boolean {
 }
 
 /**
- * Simple hash function for IP addresses (for privacy-safe storage).
+ * Hash an IP address for privacy-safe storage using a djb2-derived hash.
+ * Note: For production, replace with SHA-256 + salt using Node.js crypto module.
+ * This simple hash is sufficient for privacy partitioning but not cryptographic security.
  */
 export function hashIp(ip: string): string {
-  let hash = 0;
-  for (let i = 0; i < ip.length; i++) {
-    const char = ip.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
+  // Use a fixed salt to prevent trivial rainbow table attacks
+  const salted = `adm:${ip}`;
+  let hash = 5381;
+  for (let i = 0; i < salted.length; i++) {
+    hash = ((hash << 5) + hash) ^ salted.charCodeAt(i);
+    hash = hash >>> 0; // Convert to unsigned 32-bit integer
   }
-  return Math.abs(hash).toString(36);
+  return hash.toString(36);
 }
 
 /**
