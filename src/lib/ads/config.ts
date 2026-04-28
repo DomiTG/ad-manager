@@ -27,7 +27,7 @@ export const AD_PLACEMENTS = {
     adUnitCode: "/TODO_NETWORK_CODE/content_inline",
     sizes: [
       [300, 250],
-      [1, 1], // responsive placeholder
+      [1, 1], // 1×1 pixel size used as a catch-all for flexible/native creatives
     ] as [number, number][],
     refreshInterval: 0, // no refresh for inline content
     enabled: true,

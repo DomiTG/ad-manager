@@ -83,7 +83,7 @@ export function isViewable(visiblePercentage: number): boolean {
  */
 export function hashIp(ip: string): string {
   // Use a fixed salt to prevent trivial rainbow table attacks
-  const salted = `adm:${ip}`;
+  const salted = `ad-system:${ip}`;
   let hash = 5381;
   for (let i = 0; i < salted.length; i++) {
     hash = ((hash << 5) + hash) ^ salted.charCodeAt(i);

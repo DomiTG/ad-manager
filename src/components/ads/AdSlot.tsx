@@ -53,7 +53,7 @@ function getSessionId(): string {
   if (!sid) {
     const uuid = typeof crypto !== "undefined" && crypto.randomUUID
       ? crypto.randomUUID()
-      : `${Date.now().toString(36)}-${Date.now().toString(36)}`;
+      : `${Date.now().toString(36)}-${Math.random().toString(36).substring(2)}`;
     sid = `s_${uuid}`;
     sessionStorage.setItem("ad_session_id", sid);
   }
@@ -225,7 +225,6 @@ export default function AdSlot({
       },
     ];
 
-    // PREBID_TIMEOUT_MS is server-only; use NEXT_PUBLIC_PREBID_TIMEOUT_MS or fallback to 1200ms
     const timeoutMs = parseInt(process.env.NEXT_PUBLIC_PREBID_TIMEOUT_MS || "1200", 10);
 
     pbjsCmd(() => {
