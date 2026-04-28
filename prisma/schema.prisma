@@ -1,0 +1,104 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdPlacement {
+  id              String   @id @default(cuid())
+  placementId     String   @unique
+  adUnitCode      String
+  sizes           Json     // Array of [width, height] pairs
+  refreshInterval Int      @default(30) // seconds, 0 = no refresh
+  enabled         Boolean  @default(true)
+  bidders         Json     // Array of bidder configs
+  targeting       Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  impressions     AdImpression[]
+  clicks          AdClick[]
+  bidEvents       AdBidEvent[]
+  sponsorCreatives SponsorCreative[]
+}
+
+model AdBidEvent {
+  id          String   @id @default(cuid())
+  placementId String
+  sessionId   String
+  userId      String?
+  bidder      String
+  cpm         Float
+  currency    String   @default("USD")
+  adId        String?
+  won         Boolean  @default(false)
+  timestamp   DateTime @default(now())
+  userAgent   String?
+  referrer    String?
+
+  placement   AdPlacement @relation(fields: [placementId], references: [placementId])
+
+  @@index([placementId, timestamp])
+  @@index([sessionId])
+}
+
+model AdImpression {
+  id                String   @id @default(cuid())
+  placementId       String
+  sessionId         String
+  userId            String?
+  visiblePercentage Float
+  timestamp         DateTime @default(now())
+  userAgent         String?
+  referrer          String?
+  ipHash            String?  // hashed for privacy
+
+  placement         AdPlacement @relation(fields: [placementId], references: [placementId])
+
+  @@unique([placementId, sessionId, timestamp]) // deduplication key
+  @@index([placementId, timestamp])
+  @@index([sessionId])
+}
+
+model AdClick {
+  id                String   @id @default(cuid())
+  placementId       String
+  sessionId         String
+  userId            String?
+  visiblePercentage Float
+  timestamp         DateTime @default(now())
+  userAgent         String?
+  referrer          String?
+  ipHash            String?
+
+  placement         AdPlacement @relation(fields: [placementId], references: [placementId])
+
+  @@index([placementId, timestamp])
+  @@index([sessionId])
+}
+
+model SponsorCreative {
+  id          String   @id @default(cuid())
+  placementId String
+  name        String
+  imageUrl    String
+  linkUrl     String
+  altText     String
+  active      Boolean  @default(true)
+  priority    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  placement   AdPlacement @relation(fields: [placementId], references: [placementId])
+}
+
+model AdSessionBlocklist {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  reason    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+}
