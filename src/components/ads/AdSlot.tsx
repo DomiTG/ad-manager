@@ -225,7 +225,8 @@ export default function AdSlot({
       },
     ];
 
-    const timeoutMs = parseInt(process.env.PREBID_TIMEOUT_MS || "1200", 10);
+    // PREBID_TIMEOUT_MS is server-only; use NEXT_PUBLIC_PREBID_TIMEOUT_MS or fallback to 1200ms
+    const timeoutMs = parseInt(process.env.NEXT_PUBLIC_PREBID_TIMEOUT_MS || "1200", 10);
 
     pbjsCmd(() => {
       if (!window.pbjs || !isMountedRef.current) return;
