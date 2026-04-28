@@ -51,9 +51,8 @@ function getSessionId(): string {
   if (typeof window === "undefined") return "";
   let sid = sessionStorage.getItem("ad_session_id");
   if (!sid) {
-    const uuid = typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `${Date.now().toString(36)}-${Math.random().toString(36).substring(2)}`;
+    // Use the Web Crypto API for a cryptographically secure session ID
+    const uuid = crypto.randomUUID();
     sid = `s_${uuid}`;
     sessionStorage.setItem("ad_session_id", sid);
   }
